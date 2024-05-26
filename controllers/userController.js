@@ -44,7 +44,7 @@ class UserController {
       id: uuid.v4(),
       name,
       email,
-      ageNumber,
+      age: ageNumber,
     };
     usersData.push(newUser);
 
