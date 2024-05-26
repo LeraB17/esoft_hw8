@@ -3,7 +3,10 @@ const uuid = require("uuid");
 
 class UserController {
   async getUsers(req, res) {
-    return res.json({ data: usersData });
+    return res.json({
+      count: usersData.length,
+      data: usersData,
+    });
   }
 
   async getUser(req, res, next) {
@@ -100,7 +103,10 @@ class UserController {
     }
 
     const usersDataFiltered = usersData.filter((user) => user.age > age);
-    return res.json({ data: usersDataFiltered });
+    return res.json({
+      count: usersDataFiltered.length,
+      data: usersDataFiltered,
+    });
   }
 
   async getUsersFilteredDomain(req, res, next) {
@@ -110,14 +116,20 @@ class UserController {
       (user) => user.email.split("@")[1] === domain
     );
 
-    return res.json({ data: usersDataFiltered });
+    return res.json({
+      count: usersDataFiltered.length,
+      data: usersDataFiltered,
+    });
   }
 
   async getUsersSorted(req, res, next) {
     const usersDataSorted = usersData
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name));
-    res.json({ data: usersDataSorted });
+    res.json({
+      count: usersDataSorted.length,
+      data: usersDataSorted,
+    });
   }
 }
 
