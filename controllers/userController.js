@@ -3,20 +3,19 @@ const uuid = require("uuid");
 
 class UserController {
   async getUsers(req, res) {
-    return res.json({ data: usersData });
+    return res.json({
+      count: usersData.length,
+      data: usersData,
+    });
   }
 
   async getUser(req, res, next) {
     const { id } = req.params;
 
-    if (!id) {
-      return next(ApiError.teapot("Не передан обязательный параметр: ID"));
-    }
-
     const user = usersData.find((usr) => usr.id === id);
 
     if (!user) {
-      return next(ApiError.badRequest("Пользователь не найден"));
+      return next(ApiError.notFound("Пользователь не найден"));
     }
 
     return res.json(user);
@@ -35,11 +34,17 @@ class UserController {
       return next(ApiError.teapot("Не передан обязательный параметр: age"));
     }
 
+    const ageNumber = Number(age);
+
+    if (!ageNumber) {
+      return next(ApiError.teapot("Возраст не является числом"));
+    }
+
     const newUser = {
       id: uuid.v4(),
       name,
       email,
-      age,
+      age: ageNumber,
     };
     usersData.push(newUser);
 
@@ -54,12 +59,18 @@ class UserController {
       const user = usersData.find((usr) => usr.id === id);
 
       if (!user) {
-        return next(ApiError.badRequest("Пользователь не найден"));
+        return next(ApiError.notFound("Пользователь не найден"));
+      }
+
+      const ageNumber = Number(age);
+
+      if (!ageNumber) {
+        return next(ApiError.teapot("Возраст не является числом"));
       }
 
       if (name) user.name = name;
       if (email) user.email = email;
-      if (age) user.age = age;
+      if (age) user.age = ageNumber;
 
       return res.json(user);
     } catch (e) {
@@ -73,7 +84,7 @@ class UserController {
 
       const user = usersData.find((usr) => usr.id === id);
       if (!user) {
-        return next(ApiError.badRequest("Пользователь не найден"));
+        return next(ApiError.notFound("Пользователь не найден"));
       }
 
       usersData = usersData.filter((usr) => usr.id !== id);
@@ -82,6 +93,43 @@ class UserController {
     } catch (e) {
       next(ApiError(e.message));
     }
+  }
+
+  async getUsersFilteredAge(req, res, next) {
+    const age = Number(req.params.age);
+
+    if (!age) {
+      return next(ApiError.teapot("Возраст не является числом"));
+    }
+
+    const usersDataFiltered = usersData.filter((user) => user.age > age);
+    return res.json({
+      count: usersDataFiltered.length,
+      data: usersDataFiltered,
+    });
+  }
+
+  async getUsersFilteredDomain(req, res, next) {
+    const { domain } = req.params;
+
+    const usersDataFiltered = usersData.filter(
+      (user) => user.email.split("@")[1] === domain
+    );
+
+    return res.json({
+      count: usersDataFiltered.length,
+      data: usersDataFiltered,
+    });
+  }
+
+  async getUsersSorted(req, res, next) {
+    const usersDataSorted = usersData
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name));
+    res.json({
+      count: usersDataSorted.length,
+      data: usersDataSorted,
+    });
   }
 }
 
